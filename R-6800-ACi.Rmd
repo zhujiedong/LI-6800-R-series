@@ -1,0 +1,52 @@
+---
+title: "使用 R 分析 LI-6800 的数据"
+subtitle: "ACi 曲线的拟合"
+author: "祝介东"
+institute: "北京力高泰科技有限公司 技术部"
+date: "`r Sys.Date()` 修改"
+output:
+  xaringan::moon_reader:
+    css: [zh-CN.css, extra-rutgers.css, animate-min.css]
+    lib_dir: libs
+    nature:
+      ratio: '16:9'
+      countdown: 300000
+      highlightStyle: ir-black
+      highlightLines: true
+      countIncrementalSlides: false
+---
+background-image: url(https://s2.ax1x.com/2020/03/09/8S2l7T.png)
+
+background-size: cover
+
+class: left middle
+
+# 主要内容
+
+### .black.medium.bold[1 package 介绍]
+### .black.medium.bold[2 数据的准备]
+### .black.medium.bold[3 数据的拟合]
+### .black.medium.bold[4 结果的查看与导出]
+---
+class: inverse center middle
+
+# `plantecophys` 介绍
+
+---
+# `plantecophys` 作者
+
+.center.blue[[https://remkoduursma.github.io/plantecophys/](https://remkoduursma.github.io/plantecophys/)
+]
+
+```{r}
+include_graphics("./img/remko.png")
+```
+
+---
+# 软件包的科学背景
+
+```{r}
+include_graphics("./img/plos-one.png")
+```
+---
+

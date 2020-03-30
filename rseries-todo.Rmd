@@ -1,0 +1,204 @@
+---
+title: "使用 R 软件分析光合数据之一"
+subtitle: "R 软件及其相关工具的安装"
+author: "祝介东"
+institute: "北京力高泰科技有限公司 技术部"
+date: "`r Sys.Date()` 修改"
+output:
+  xaringan::moon_reader:
+    css: [zh-CN.css, extra-rutgers.css, animate-min.css]
+    lib_dir: libs
+    nature:
+      ratio: '16:9'
+      countdown: 300000
+      highlightStyle: ir-black
+      highlightLines: true
+      countIncrementalSlides: false
+---
+background-image: url("https://i.stack.imgur.com/W5p8w.png")
+
+class: inverse, left, middle
+
+# R 软件
+
+#
+---
+class: animated, fadeIn
+
+## 基本准备
+
+.pull-left[
+### R
+
+- [Windows](https://cran.r-project.org/bin/windows/base/R-3.5.2-win.exe)
+- [macOS](https://cran.r-project.org/bin/macosx/R-3.5.2.pkg)
+- [Linux](https://cran.r-project.org/bin/linux/)
+]
+
+--
+
+.pull-right[
+
+### RStudio: 
+
+- [Download](https://www.rstudio.com/products/rstudio/download/#download)
+]
+
+.blue[R 软件是具体执行分析的软件， Rsutdio 则为我们写代码的一个环境。即 R 是具体执行代码，进行分析工作的部分，是核心部分，我们可以没有 Rstudio，但不能没有 R，Rsutido 使我们的能够进行代码编写。]
+---
+class: animated, fadeIn
+
+
+## RStudio 使用
+
+.pull-left[
+
+### 面板
+
+![](http://www.sthda.com/sthda/RDoc/images/rstudio.png)
+
+]
+
+--
+
+.pull-right[
+
+### 快捷键
+
+- ctrl + enter (Run selected line(s))
+
+- F1 (show function help)
+
+- TAB (completion)
+
+### Project
+- 方便的相对路径引用
+- 快速查看当前目录的文件
+- 方便的自定义设置
+]
+
+---
+
+
+---
+## 数据的导入和导出
+
+.pull-left[
+
+### 数据的导入
+
+```r
+read.csv("./data/lrc.csv")
+?read.table
+?readxl::read_excel
+```
+]
+--
+.pull-right[
+
+### 数据的导出
+
+```r
+write.csv(AQ, "./data/lrc.csv")
+write.table(AQ, "./data/lrc.csv", sep="\t")
+```
+]
+
+R 支持非常丰富的数据文件导入，例如 SPSS, SAS, SQL, json 等，但遇到最多的还是 csv，txt，excel更格式，也是我们光合数据分析常用到的格式。
+
+---
+
+## 光响应曲线的拟合
+### 数据的准备
+
+```{r, echo=FALSE}
+aq <- read.csv("../data/lrc.csv")
+knitr::kable(aq[1:6, 1:7], format="html")
+```
+对于我们来讲，数据整理成如上样式的 csv 文件最为方便，当然数据量大时批量的数据整理可以使用 `readphoto` 来实现。
+---
+### 选择模型
+例如，直角双曲线模型 R 的书写方法
+
+$$P_{n}  = \frac{\alpha I\ P_{nmax}}{\alpha I + P_{nmax}}- R_{d}$$
+
+```r
+lrc_A ~ (alpha * lrc_Q * Am) * (1/(alpha * lrc_Q + Am)) - Rd
+```
+---
+class: center, middle
+
+# 实例演示
+---
+## $CO_2$ 响应曲线的拟合
+
+这个实现方式比较简单，重点说明一下几个问题：
+
+### 默认拟合方法失败时
+
+```r
+fitmethod = "bilinear"
+```
+- `fitmethod = default` 失败时使用。
+
+- 也就是两次线性拟合求得 Vcmax， Jmax。
+---
+## `fitacis` 的分组数据
+### factor
+
+factor 是包含预定义值的特殊向量，用于存储.red[分类数据]。它建立在 .blue[整数向量]之上，只不过有特殊的属性，这使得他们和我们平常所见的整数向量表现不同。
+
+```{r}
+x <- factor(c("a", "b", "b", "a"))
+x
+y <- c("a", "b", "b", "a")
+y
+x <- factor(c("a", "b", "b", "a"), levels = c("b","a"))
+x
+```
+
+factor 对于我们来讲，最重要的作用就是区分不同的水平，不同的处理，例如上面的 factor，我可以将 a 编号为干旱处理，b 为对照，类似于我们 LI-6800 里的 user constant。
+
+---
+### 数据的格式
+
+```{r, echo=FALSE}
+library(plantecophys)
+knitr::kable(manyacidat[1:5,1:6], format="html")
+```
+
+实例中 `fitacis` 使用了 curve 作为不同数据的分组，也就是将其作为了 .red[factor]，这组数据并不是光合仪测得，可以是文件名，处理名等待，示例数据看上去像是对不同处理的编号。
+---
+class: center, middle
+
+# 实例演示（略）？
+---
+## RACiR 数据分析
+
+### racir 软件包
+
+作者将程序改为只支持原始数据的分析，目前我手头没原始数据的文件，示例分析需延后。
+
+- 春天之后在办公室做测试用。
+
+- 在作者基础上修改，支持其他格式。主要考虑了重计算叶面积数据。
+
+---
+class: center, middle
+
+# 手动分析数据实例演示
+
+---
+class: center, middle
+
+# jiptest 实例演示
+---
+class: center, middle
+
+# 其他问题讨论
+
+---
+
+class: center, middle
+
+# 谢谢
