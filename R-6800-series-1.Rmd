@@ -21,7 +21,7 @@ class: inverse, left, middle, animated, fadeIn
 
 # 1. R 软件
 
-# 2. Rstudio
+# 2. Rstudio 软件
 
 # 3. Rstudio 的基本操作
 ---
@@ -87,7 +87,7 @@ class: animated, fadeIn
 
 ### RStudio: 
 
-- [Download](https://www.rstudio.com/products/rstudio/download/#download)
+- [Download](https://rstudio.com/products/rstudio/download/)
 ]
 
 <br />
@@ -97,7 +97,7 @@ class: animated, fadeIn
 class: animated, fadeIn
 
 
-## RStudio 使用
+## RStudio 界面
 
 .pull-left[
 
