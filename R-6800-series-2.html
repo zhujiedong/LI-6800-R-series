@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>使用 R 软件分析光合数据之二</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="祝介东" />
+    <link rel="stylesheet" href="zh-CN.css" type="text/css" />
+    <link rel="stylesheet" href="extra-rutgers.css" type="text/css" />
+    <link rel="stylesheet" href="animate-min.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 使用 R 软件分析光合数据之二
+## 分析前数据的准备和读取
+### 祝介东
+### 北京力高泰科技有限公司 技术部
+### 2020-04-01 修改
+
+---
+
+background-image: url("https://s1.ax1x.com/2020/03/30/GmT0oT.png")
+
+class: inverse, left, middle, animated, fadeIn
+
+# 1. LI-6800 数据的格式
+
+# 2. 文件格式的转换
+
+# 3. 软件包的安装
+
+# 4. 读取 csv 文件
+
+# 5. 读取原始文件
+---
+class: inverse, middle, center, animated, fadeIn
+
+# .large.bold[LI-6800 的数据格式]
+
+---
+class: animated, fadeIn
+# 原始数据
+
+LI-6800 的原始数据不带任何后缀，为 tab 分隔符分隔的纯文本文件，可以使用**任何的文本编辑器（推荐 notepad++）**打开。
+
+&lt;img src="./img/raw-data.png" width="1733" /&gt;
+
+**这是目前推荐的 LI-6800 读取的数据文件格式**
+---
+class: animated, fadeIn
+
+# excel 数据
+
+LI-6800 的 excel 数据是标准的 excel 文件，内含大量的公式，方便我们直接修改某些参数而进行重计算。
+
+&lt;img src="./img/excel-data.png" width="1127" /&gt;
+
+**虽然 excel 数据对人类阅读比较友好，但它内嵌的大量公式处于大量不规则的数据行（头文件）之下，目前 openxls 尚不支持对此类型的公式的读入，因此，一般需要将其转换为其他格式读取，该方式适合需要修改叶面积等参数的数据文件的读入**。
+---
+class: inverse, center, middle, animated, fadeIn
+
+
+# .large.bold[软件包的安装]
+
+
+---
+class: animated, fadeIn
+# 图形界面安装 CRAN 软件包
+.pull-left[
+&lt;img src="./img/repo.png" width="477" /&gt;
+]
+
+.pull-right[
+
+&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+
+&lt;img src="./img/gui-packages.png" width="472" /&gt;
+]
+---
+class: animated, fadeIn
+# 命令安装软件包
+
+.large.bold[- 安装 CRAN 软件包]
+
+
+```r
+install.packages("packages")
+# 或
+install.packages(c("packages1", "packages2", "..."))
+```
+
+.large.bold[- `remotes` 安装其他来源的软件包]
+
+例如：
+
+```r
+remotes::install_github("repo name")
+remotes::install_bitbucket("repo name")
+```
+
+---
+class: inverse, center, middle, animated, fadeIn
+
+
+# .large.bold[读取数据文件]
+
+---
+class: animated, fadeIn
+
+# 读取 csv 文件
+R 有许多与读取 csv 文件相关的函数,例如常用的：
+
+```r
+utils::read.csv
+readr::read_csv
+data.table::fread
+```
+其它 ......
+
+--
+# 读取原始数据文件
+R 对原始数据文件的读取有两种方式：
+
+1. 直接使用 `read.delim` 读取 tab 分隔符的数据，因数据格式的原因，需要读取两次，以获得表头和数据。
+
+2. 使用 `regex_read` 直接读取
+
+---
+class: inverse, center, middle, animated, fadeIn
+
+# .large.bold[数据读取的演示]
+---
+class: center, middle
+
+# 谢谢
+&lt;img src="./img/qrcode.jpg" width="377" /&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "ir-black",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  /* Replace <script> tags in slides area to make them executable
+   *
+   * Runs after post-processing of markdown source into slides and replaces only
+   * <script>s on the last slide of continued slides using the .has-continuation
+   * class added by xaringan. Finally, any <script>s in the slides area that
+   * aren't executed are commented out.
+   */
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container:not(.has-continuation) script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+  var scriptsNotExecuted = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container.has-continuation script'
+  );
+  if (!scriptsNotExecuted.length) return;
+  for (var i = 0; i < scriptsNotExecuted.length; i++) {
+    var comment = document.createComment(scriptsNotExecuted[i].outerHTML)
+    scriptsNotExecuted[i].parentElement.replaceChild(comment, scriptsNotExecuted[i])
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+(function(time) {
+  var d2 = function(number) {
+    return ('0' + number).slice(-2); // left-pad 0 to minutes/seconds
+  },
+
+  time_format = function(total) {
+    var secs = Math.abs(total) / 1000;
+    var h = Math.floor(secs / 3600);
+    var m = Math.floor(secs % 3600 / 60);
+    var s = Math.round(secs % 60);
+    var res = d2(m) + ':' + d2(s);
+    if (h > 0) res = h + ':' + res;
+    return res;  // [hh:]mm:ss
+  },
+
+  slide_number_div = function(i) {
+    return document.getElementsByClassName('remark-slide-number').item(i);
+  },
+
+  current_page_number = function(i) {
+    return slide_number_div(i).firstChild.textContent;  // text "i / N"
+  };
+
+  var timer = document.createElement('span'); timer.id = 'slide-time-left';
+  var time_left = time, k = slideshow.getCurrentSlideIndex(),
+      last_page_number = current_page_number(k);
+
+  setInterval(function() {
+    time_left = time_left - 1000;
+    timer.innerHTML = ' ' + time_format(time_left);
+    if (time_left < 0) timer.style.color = 'red';
+  }, 1000);
+
+  slide_number_div(k).appendChild(timer);
+
+  slideshow.on('showSlide', function(slide) {
+    var i = slide.getSlideIndex(), n = current_page_number(i);
+    // reset timer when a new slide is shown and the page number is changed
+    if (last_page_number !== n) {
+      time_left = time; last_page_number = n;
+      timer.innerHTML = ' ' + time_format(time); timer.style.color = null;
+    }
+    slide_number_div(i).appendChild(timer);
+  });
+})(300000);
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
