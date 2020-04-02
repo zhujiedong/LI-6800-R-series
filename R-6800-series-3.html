@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>使用 R 软件分析光合数据之二</title>
+    <title>使用 R 软件分析光合数据之三</title>
     <meta charset="utf-8" />
     <meta name="author" content="祝介东" />
     <link rel="stylesheet" href="zh-CN.css" type="text/css" />
@@ -12,8 +12,8 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 使用 R 软件分析光合数据之二
-## 分析前数据的准备和读取
+# 使用 R 软件分析光合数据之三
+## 光响应曲线的拟合
 ### 祝介东
 ### 北京力高泰科技有限公司 技术部
 ### 2020-04-02 修改
@@ -24,114 +24,201 @@ background-image: url("https://s1.ax1x.com/2020/03/30/GmT0oT.png")
 
 class: inverse, left, middle, animated, fadeIn
 
-# 1. LI-6800 数据的格式
+# 1. 光响应曲线的模型
 
-# 2. 文件格式的转换
+# 2. 模型的拟合
 
-# 3. 软件包的安装
+# 3. 补偿点和饱和点的计算
 
-# 4. 读取 csv 文件
-
-# 5. 读取原始文件
+# 4. 步骤详解及演示
 ---
 class: inverse, middle, center, animated, fadeIn
 
-# .large.bold[LI-6800 的数据格式]
+# .large.bold[光响应曲线的模型]
 
 ---
 class: animated, fadeIn
-# 原始数据
 
-LI-6800 的原始数据不带任何后缀，为 tab 分隔符分隔的纯文本文件，可以使用**任何的文本编辑器（推荐 notepad++）**打开。
+# 光响应曲线模型的类型
 
-&lt;img src="./img/raw-data.png" width="1733" /&gt;
 
-**这是目前推荐的 LI-6800 读取的数据文件格式**
+.large.bold[光响应曲线的模型有很多，常见的有四大类：
+
+- 直角双曲线模型
+- 非直角双曲线模型
+- 指数模型
+- 直角双曲线修正模型 
+]
+
+其简单介绍可以参考：[光响应曲线拟合-github](https://zhujiedong.github.io/photoanalysis/lrc-fit.html) 或 [光响应曲线拟合-gitee](http://zhu_jie_dong.gitee.io/photoanalysis/lrc-fit.html)
+---
+class: animated, fadeIn
+# 模型的拟合
+
+不管哪个模型的拟合，都属于非线性拟合，可以使用下面几个函数来拟合：
+&lt;br /&gt;
+&lt;br /&gt;
+
+```r
+stats::nls()
+
+minpack.lm::nlsLM()
+
+nls2::nls2()
+```
+&lt;br /&gt;
+&lt;br /&gt;
+其中 `nls2` 基于 `nls`，但可以设定一个初值的范围，`minpack.lm` 基于 `MINPACK` 库，`nlsLM` 最大的特点就是对初值的敏感性较低，比较容易得到测量结果（同样的初值出现不收敛的概率相对低）。
+
+关于非线性拟合初值确定的问题可参考：[非线性拟合初值的确定-github](https://zhujiedong.github.io/photoanalysis/start-con.html) 或 [非线性拟合初值的确定-gitee](http://zhu_jie_dong.gitee.io/photoanalysis/start-con.html)
 ---
 class: animated, fadeIn
 
-# excel 数据
+# 光补偿点的计算
 
-LI-6800 的 excel 数据是标准的 excel 文件，内含大量的公式，方便我们直接修改某些参数而进行重计算。
+&lt;br /&gt;
+&lt;br /&gt;
+除了指数模型和直角双曲线修正模型外，其他模型因为模型参数本身不使用补偿点作为参数，无法通过拟合得到光补偿点，我们可以通过下面的方式计算：
 
-&lt;img src="./img/excel-data.png" width="1127" /&gt;
-
-**虽然 excel 数据对人类阅读比较友好，但它内嵌的大量公式处于大量不规则的数据行（头文件）之下，目前 openxls 尚不支持对此类型的公式的读入，因此，一般需要将其转换为其他格式读取，该方式适合需要修改叶面积等参数的数据文件的读入**。
----
-class: inverse, center, middle, animated, fadeIn
-
-
-# .large.bold[软件包的安装]
-
+&lt;br /&gt;
+&lt;br /&gt;
+当达到光补偿点时，净光合速率为零，我们可以通过计算出模型参数后，使得净光合速率为零，然后将模型作为光强未知的一元方程求解，在比较低的范围内（例如 1 ~ 50），得到方程的根即为光的补偿点。
 
 ---
 class: animated, fadeIn
-# 图形界面安装 CRAN 软件包
+
+# 光饱和点的计算
+
 .pull-left[
-&lt;img src="./img/repo.png" width="477" /&gt;
+
+理论上可以使用下面的方式来计算：弱光条件下
+( `\(\leq 200 \mu mol\cdot m^{-2}\cdot s^{-1}\)` ) 的数据通过线性拟合得到表观量子效率（apparent
+quantum efficiency，AQE），利用非线性最小二乘法估算 `\(P_{nmax}\)` ，最后计算求解 `\(I_{sat}\)`，
+
+`$$P_{nmax}= AQE \times I_{sat} - R_{d}$$`
+
+但此方法测得的光饱和点远小于实测值。
 ]
 
 .pull-right[
 
-&lt;br /&gt;
-&lt;br /&gt;
-&lt;br /&gt;
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="./img/aqe.png" alt="引用自叶子飘等( 2010)" width="623" /&gt;
+&lt;p class="caption"&gt;引用自叶子飘等( 2010)&lt;/p&gt;
+&lt;/div&gt;
 
-&lt;img src="./img/gui-packages.png" width="472" /&gt;
+
 ]
+
 ---
 class: animated, fadeIn
-# 命令安装软件包
 
-.large.bold[- 安装 CRAN 软件包]
+# 光饱和点的计算
 
+除了直角双曲线修正模型外，其他三种模型均不存在极大值，无光饱和点，我们可以根据计算补偿点相似的方法，将净光合速率达到最大光合速率一定比例时的值，作为刚刚达到光饱和点时的光合速率，此时也在一定范围内（例如400 ~ 2000）计算一元方程的根，将其作为光饱和点。可参考：
+
+Huang, HY, XY Dou, PY Sun, B Deng, GJ Wu, and CL Peng. 2009. “Comparison of Photosynthetic Characteristics in Two Ecotypes of Jatropha Curcas in Summer.” Acta Ecologica Sinica, no. 29: 2861–2867
+
+Zhang, XS, SH Shen, and J Song. 2009. “The Vertical Distribution of Cotton Leaf Nitrogen Content and Photosynthetic Characteristics in the North China Plain.” Acta Ecologica Sinica, no. 29: 1893–1898.
+
+---
+class: animated, fadeIn
+
+# 代码详解
+
+## 以直角双曲线为例的介绍
+
+直角双曲线的形式为：
+
+`$$P_{n}  = \frac{\alpha I\ P_{nmax}}{\alpha I + P_{nmax}}- R_{d}$$`
+
+
+* 其中 `\(P_{n}\)` 为净光合速率；
+* I 为光强；
+* `\(\alpha\)` 为光响应曲线的初始斜率，也称之为初始量子效率；
+* `\(P_{nmax}\)` 为最大净光合速率；
+* `\(R_{d}\)`：为暗呼吸速率。
+
+`\(P_{n}\)` 和 I 是我们直接测量的数据，其他的为模型计算所需要的参数。
+---
+class: animated, fadeIn
+
+# 模型的公式化
+
+我们要对直角双曲线模型进行拟合，必须将其写为 R 的数学表达形式，才能用于 formula，例如非直角双曲线写为 formula 为：
 
 ```r
-install.packages("packages")
-# 或
-install.packages(c("packages1", "packages2", "..."))
+lrc_A ~ (alpha * lrc_Q * Am) * (1/(alpha * lrc_Q + Am)) - Rd
+
 ```
 
-.large.bold[- `remotes` 安装其他来源的软件包]
+其中 lrc_Q 为光强，lrc_A 为净光合速率
 
-例如：
+具体可参考帮助文档：
 
 ```r
-remotes::install_github("repo name")
-remotes::install_bitbucket("repo name")
+?Arithmetic
+?formula
+```
+
+---
+class: animated, fadeIn
+
+# 数据的读取
+
+数据的读取可以根据存储的形式，选择合适的方式，这是本系列第二讲的内容，此处不赘述。
+
+# 非线性拟合
+
+最开始可以选择 `minpack.lm` 中的 `nlsLM` 函数进行拟合。各个初值的设定原则为：
+
+- Am：最大光合速率可以使用测量的光合速率最大值与最小值之差。
+- Rd：可以使用最小的光合速率的绝对值。
+- `\(\alpha\)`: 初始斜率可以使用 0.05 等小数点后第二位的数字来作为尝试。
+- 如果有一个大概的范围，可以使用 `nls2` 来构造一个初值的范围网格
+
+可参考：[初值的确定-github](https://zhujiedong.github.io/photoanalysis/start-con.html) 或 [初值的确定-gitee](http://zhu_jie_dong.gitee.io/photoanalysis/start-con.html)
+---
+class: animated, fadeIn
+
+# 拟合结果的查看和调用
+
+- 使用 `summary` 查看拟合结果
+
+- 返回的结果是一个列表，计算的参数存储于 coefficient 列表内
+
+有用的帮助文档：
+
+
+```r
+?summary
+?coef
+```
+
+
+参数结果可以直接调用以方便计算。
+---
+class: animated, fadeIn
+
+# 补偿点和饱和点的计算
+
+分为两步
+
+- 调用拟合的参数，构造一元方程
+
+- 使用 `uniroot` 求得一定范围内的解
+
+参考：
+
+```r
+?uniroot
 ```
 
 ---
 class: inverse, center, middle, animated, fadeIn
 
+# .large.bold[详细代码运行演示]
 
-# .large.bold[读取数据文件]
-
----
-class: animated, fadeIn
-
-# 读取 csv 文件
-R 有许多与读取 csv 文件相关的函数,例如常用的：
-
-```r
-utils::read.csv
-readr::read_csv
-data.table::fread
-```
-其它 ......
-
---
-# 读取原始数据文件
-R 对原始数据文件的读取有两种方式：
-
-1. 直接使用 `read.delim` 读取 tab 分隔符的数据，因数据格式的原因，需要读取两次，以获得表头和数据。
-
-2. 使用 `regex_read` 直接读取
-
----
-class: inverse, center, middle, animated, fadeIn
-
-# .large.bold[数据读取的演示]
 ---
 background-image: url("https://s1.ax1x.com/2020/04/02/GJimlV.png")
 background-size: contain

@@ -218,9 +218,9 @@ thead, tfoot, tr:nth-child(even) { background: none; }
 
 /* Add image and change bg color */
 .title-slide {
-  background-image: url(https://www.licor.com/images/licor-logo.png); 
+  background-image: url(https://s1.ax1x.com/2020/04/02/GJiSQf.png); 
   background-position: 9% 40%;
-  background-size: 150px;
+  background-size: 180px;
   background-color: #fff;
   padding-left: 100px;  /* delete this for 4:3 aspect ratio */
 }

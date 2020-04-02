@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 ## R 软件及其相关工具的安装
 ### 祝介东
 ### 北京力高泰科技有限公司 技术部
-### 2020-03-31 修改
+### 2020-04-02 修改
 
 ---
 
@@ -136,11 +136,8 @@ class: inverse, middle, center, animated, fadeIn
 
 
 ---
-
-class: center, middle
-
-# 谢谢
-&lt;img src="./img/qrcode.jpg" width="273" /&gt;
+background-image: url("https://s1.ax1x.com/2020/04/02/GJimlV.png")
+background-size: contain
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
@@ -191,30 +188,20 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
 })();
 (function() {
   "use strict"
-  /* Replace <script> tags in slides area to make them executable
-   *
-   * Runs after post-processing of markdown source into slides and replaces only
-   * <script>s on the last slide of continued slides using the .has-continuation
-   * class added by xaringan. Finally, any <script>s in the slides area that
-   * aren't executed are commented out.
-   */
+  // Replace <script> tags in slides area to make them executable
   var scripts = document.querySelectorAll(
-    '.remark-slides-area .remark-slide-container:not(.has-continuation) script'
+    '.remark-slides-area .remark-slide-container script'
   );
   if (!scripts.length) return;
   for (var i = 0; i < scripts.length; i++) {
     var s = document.createElement('script');
     var code = document.createTextNode(scripts[i].textContent);
     s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
     scripts[i].parentElement.replaceChild(s, scripts[i]);
-  }
-  var scriptsNotExecuted = document.querySelectorAll(
-    '.remark-slides-area .remark-slide-container.has-continuation script'
-  );
-  if (!scriptsNotExecuted.length) return;
-  for (var i = 0; i < scriptsNotExecuted.length; i++) {
-    var comment = document.createComment(scriptsNotExecuted[i].outerHTML)
-    scriptsNotExecuted[i].parentElement.replaceChild(comment, scriptsNotExecuted[i])
   }
 })();
 (function() {
@@ -225,51 +212,6 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     }
   }
 })();
-(function(time) {
-  var d2 = function(number) {
-    return ('0' + number).slice(-2); // left-pad 0 to minutes/seconds
-  },
-
-  time_format = function(total) {
-    var secs = Math.abs(total) / 1000;
-    var h = Math.floor(secs / 3600);
-    var m = Math.floor(secs % 3600 / 60);
-    var s = Math.round(secs % 60);
-    var res = d2(m) + ':' + d2(s);
-    if (h > 0) res = h + ':' + res;
-    return res;  // [hh:]mm:ss
-  },
-
-  slide_number_div = function(i) {
-    return document.getElementsByClassName('remark-slide-number').item(i);
-  },
-
-  current_page_number = function(i) {
-    return slide_number_div(i).firstChild.textContent;  // text "i / N"
-  };
-
-  var timer = document.createElement('span'); timer.id = 'slide-time-left';
-  var time_left = time, k = slideshow.getCurrentSlideIndex(),
-      last_page_number = current_page_number(k);
-
-  setInterval(function() {
-    time_left = time_left - 1000;
-    timer.innerHTML = ' ' + time_format(time_left);
-    if (time_left < 0) timer.style.color = 'red';
-  }, 1000);
-
-  slide_number_div(k).appendChild(timer);
-
-  slideshow.on('showSlide', function(slide) {
-    var i = slide.getSlideIndex(), n = current_page_number(i);
-    // reset timer when a new slide is shown and the page number is changed
-    if (last_page_number !== n) {
-      time_left = time; last_page_number = n;
-      timer.innerHTML = ' ' + time_format(time); timer.style.color = null;
-    }
-    slide_number_div(i).appendChild(timer);
-  });
-})(300000);
 // adds .remark-code-has-line-highlighted class to <pre> parent elements
 // of code chunks containing highlighted lines with class .remark-code-line-highlighted
 (function(d) {

@@ -136,9 +136,5 @@ class: inverse, center, middle, animated, fadeIn
 
 # .large.bold[数据读取的演示]
 ---
-class: center, middle
-
-# 谢谢
-```{r}
-include_graphics("./img/qrcode.jpg")
-```
+background-image: url("https://s1.ax1x.com/2020/04/02/GJimlV.png")
+background-size: contain

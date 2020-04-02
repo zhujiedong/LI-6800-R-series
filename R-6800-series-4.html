@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>使用 R 软件分析光合数据之二</title>
+    <title>使用 R 分析 LI-6800 的数据</title>
     <meta charset="utf-8" />
     <meta name="author" content="祝介东" />
     <link rel="stylesheet" href="zh-CN.css" type="text/css" />
@@ -12,8 +12,8 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 使用 R 软件分析光合数据之二
-## 分析前数据的准备和读取
+# 使用 R 分析 LI-6800 的数据
+## FvCB 模型的拟合
 ### 祝介东
 ### 北京力高泰科技有限公司 技术部
 ### 2020-04-02 修改
@@ -24,117 +24,130 @@ background-image: url("https://s1.ax1x.com/2020/03/30/GmT0oT.png")
 
 class: inverse, left, middle, animated, fadeIn
 
-# 1. LI-6800 数据的格式
+# 主要内容
 
-# 2. 文件格式的转换
-
-# 3. 软件包的安装
-
-# 4. 读取 csv 文件
-
-# 5. 读取原始文件
+# 1.  package 介绍
+# 2.  fitaci 参数介绍
+# 3.  数据的拟合
+# 4.  结果的查看与导出
 ---
-class: inverse, middle, center, animated, fadeIn
+class: inverse center middle, animated, fadeIn
 
-# .large.bold[LI-6800 的数据格式]
+# .large.bold[ plantecophys 介绍]
 
 ---
 class: animated, fadeIn
-# 原始数据
 
-LI-6800 的原始数据不带任何后缀，为 tab 分隔符分隔的纯文本文件，可以使用**任何的文本编辑器（推荐 notepad++）**打开。
+# `plantecophys` 作者介绍
 
-&lt;img src="./img/raw-data.png" width="1733" /&gt;
+.center.medium[[https://remkoduursma.github.io/plantecophys/](https://remkoduursma.github.io/plantecophys/)
+]
 
-**这是目前推荐的 LI-6800 读取的数据文件格式**
+&lt;img src="./img/remko.png" width="1205" /&gt;
+
 ---
 class: animated, fadeIn
 
-# excel 数据
+# 软件包的科学背景
 
-LI-6800 的 excel 数据是标准的 excel 文件，内含大量的公式，方便我们直接修改某些参数而进行重计算。
+&lt;img src="./img/plos-one.png" width="969" /&gt;
+---
+class: animated, fadeIn
 
-&lt;img src="./img/excel-data.png" width="1127" /&gt;
+# 软件包的科学背景
 
-**虽然 excel 数据对人类阅读比较友好，但它内嵌的大量公式处于大量不规则的数据行（头文件）之下，目前 openxls 尚不支持对此类型的公式的读入，因此，一般需要将其转换为其他格式读取，该方式适合需要修改叶面积等参数的数据文件的读入**。
+为避免拟合的不连续性，采用了一个非直角双曲线形式的模型进行拟合： 
+
+`$$A_m = \frac{A_c+A_j- \sqrt{(A_c+A_j)^2-4 \theta A_c A_j}}{2 \theta}-R_d$$`
+
+- `\(\theta\)` 和其他非直角双曲线模型一样，是形状的参数，默认设置为 0.9999，
+
+- `\(A_m\)` 为双曲线性质的 `\(A_c\)` 和 `\(A_j\)`
+
+软件包使用了 nls 来进行非线性拟合并进行参数的标准差计算。
 ---
 class: inverse, center, middle, animated, fadeIn
 
-
-# .large.bold[软件包的安装]
-
-
----
-class: animated, fadeIn
-# 图形界面安装 CRAN 软件包
-.pull-left[
-&lt;img src="./img/repo.png" width="477" /&gt;
-]
-
-.pull-right[
-
-&lt;br /&gt;
-&lt;br /&gt;
-&lt;br /&gt;
-
-&lt;img src="./img/gui-packages.png" width="472" /&gt;
-]
----
-class: animated, fadeIn
-# 命令安装软件包
-
-.large.bold[- 安装 CRAN 软件包]
-
-
-```r
-install.packages("packages")
-# 或
-install.packages(c("packages1", "packages2", "..."))
-```
-
-.large.bold[- `remotes` 安装其他来源的软件包]
-
-例如：
-
-```r
-remotes::install_github("repo name")
-remotes::install_bitbucket("repo name")
-```
-
----
-class: inverse, center, middle, animated, fadeIn
-
-
-# .large.bold[读取数据文件]
-
+# .large.bold[ fitaci 函数介绍]
 ---
 class: animated, fadeIn
 
-# 读取 csv 文件
-R 有许多与读取 csv 文件相关的函数,例如常用的：
+# 函数的参数
+
+`fitaci` 的参数比较多：
 
 ```r
-utils::read.csv
-readr::read_csv
-data.table::fread
-```
-其它 ......
+fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci",
+  PPFD = "PARi", Rd = "Rd"), Tcorrect = TRUE, Patm = 100,
+  citransition = NULL, quiet = FALSE, startValgrid = TRUE,
+  fitmethod = c("default", "bilinear", "onepoint"),
+  algorithm = "default", fitTPU = FALSE, alphag = 0, useRd = FALSE,
+  PPFD = NULL, Tleaf = NULL, alpha = 0.24, theta = 0.85,
+  gmeso = NULL, EaV = 82620.87, EdVC = 0, delsC = 645.1013,
+  EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615, GammaStar = NULL,
+  Km = NULL, id = NULL, ...)
 
+```
+
+`plantecophys` 发表于 2015 年，当时还是 LI-6400，作者后来不再搞科研，也没有在将软件包专门做 LI-6800 的适配，因此 LI-6800 使用的前提是将 `varnames` 改为 LI-6800 的变量名（或者数据文件里的变量名改为 LI-6400 的变量名也可以），但改函数的变量名比较容易后面进行粘贴和复制：
+
+```r
+varnames =list( ALEAF = "A", Tleaf = "Tleaf", Ci = "Ci", 
+                PPFD  = "Qin", Rd = "Rd"
+                )
+```
+
+---
+class: animated, fadeIn
+# 重要的参数
+
+## 拟合方法
+
+`fitmethod = c("default", "bilinear", "onepoint")` 
+
+对于标准的 ACi 曲线和 RACiR 曲线，能够使用的方法只有 default 和 bilinear，二者结果有微小的差别，并且 bilinear 能用永远返回结果（因为他使用两次线性拟合来计算 `\(V_{cmax}\)`， `\(J_{max}\)`， `\(R_d\)`），线性拟合避免了非线性拟合的不收敛的问题。适合非线性拟合不能报错的情况，当然可以不管非线性拟合是否出结果，所有的测量均使用 bilinear。
+
+---
+class: animated, fadeIn
+# 重要的参数
+## 温度校正
+
+`fitaci` 在默认计算 `\(V_{cmax}\)` 和 `\(J_{max}\)` 时会将其标准化为常温下进行 (25C)，我们在某些情况下，例如想要测量在实际温度下的速率，那么我们需要将其修改为下面的形式：
+
+```r
+fit2 &lt;- fitaci(acidata1, Tcorrect=FALSE)
+```
 --
-# 读取原始数据文件
-R 对原始数据文件的读取有两种方式：
+## 使用测量的 Rd
 
-1. 直接使用 `read.delim` 读取 tab 分隔符的数据，因数据格式的原因，需要读取两次，以获得表头和数据。
+Rd 默认可以进行拟合后得到，但这样的结果并不准确，如果我们测量了 Rd，那么我们可以在数据文件里增加 Rd 列，例如导入的数据后名为 aci，那么我们可以：
 
-2. 使用 `regex_read` 直接读取
+```r
+aci$Rd &lt;- 1.5
+fitrd &lt;- fitaci(aci, useRd=TRUE)
+```
+---
+## Tleaf 和 Qin 不可用
+
+仪器使用难免遇到意外状况，如果发生意外的热电偶损坏，也可以进行数据的分析，对于温度传感器，Tair 和 Tleaf 的温度非常接近，可以作为替代，尽管函数提供了 Qin 的输入，但内置光量子传感器出问题的概率很低，当然，如果使用了其他人工光源，也可以直接输入其值：
+
+```r
+fit &lt;- fitaci(aci, Tleaf=30, PPFD=2000)
+
+```
+--
+## 使用叶肉导度
+叶肉导度是非常重要的参数，准确的输入该值：
+```r
+fit &lt;- fitaci(aci, gmeso=0.2)
+```
+此时 `\(V_{cmax}\)` 和 `\(J_{max}\)` 的计算会使用 [Ethier and Livingston (2004)](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-3040.2004.01140.x) 的方法。
 
 ---
 class: inverse, center, middle, animated, fadeIn
 
-# .large.bold[数据读取的演示]
----
-background-image: url("https://s1.ax1x.com/2020/04/02/GJimlV.png")
-background-size: contain
+# 谢谢
+&lt;img src="./img/qrcode.jpg" width="377" /&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
