@@ -13,3 +13,7 @@
 ## 光响应曲线的拟合
 
 [光响应曲线的拟合](/LI-6800-R-series/R-6800-series-3.html)
+
+## FvCB 模型的拟合
+
+[FvCB 模型的拟合](/LI-6800-R-series/R-6800-series-4.html)

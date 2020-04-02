@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>使用 R 分析 LI-6800 的数据</title>
+    <title>使用 R 分析 LI-6800 的数据之四</title>
     <meta charset="utf-8" />
     <meta name="author" content="祝介东" />
     <link rel="stylesheet" href="zh-CN.css" type="text/css" />
@@ -12,7 +12,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 使用 R 分析 LI-6800 的数据
+# 使用 R 分析 LI-6800 的数据之四
 ## FvCB 模型的拟合
 ### 祝介东
 ### 北京力高泰科技有限公司 技术部
@@ -127,6 +127,7 @@ aci$Rd &lt;- 1.5
 fitrd &lt;- fitaci(aci, useRd=TRUE)
 ```
 ---
+class: animated, fadeIn
 ## Tleaf 和 Qin 不可用
 
 仪器使用难免遇到意外状况，如果发生意外的热电偶损坏，也可以进行数据的分析，对于温度传感器，Tair 和 Tleaf 的温度非常接近，可以作为替代，尽管函数提供了 Qin 的输入，但内置光量子传感器出问题的概率很低，当然，如果使用了其他人工光源，也可以直接输入其值：
@@ -136,18 +137,103 @@ fit &lt;- fitaci(aci, Tleaf=30, PPFD=2000)
 
 ```
 --
+class: animated, fadeIn
 ## 使用叶肉导度
 叶肉导度是非常重要的参数，准确的输入该值：
 ```r
 fit &lt;- fitaci(aci, gmeso=0.2)
 ```
 此时 `\(V_{cmax}\)` 和 `\(J_{max}\)` 的计算会使用 [Ethier and Livingston (2004)](https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-3040.2004.01140.x) 的方法。
+---
+class: animated, fadeIn
+## TPU 计算
+
+.pull-left[
+
+&lt;br /&gt;
+&lt;br /&gt;
+&lt;br /&gt;
+
+在 Duursma, 2015 年的文献中，还没有添加的 TPU 限制阶段
+
+```r
+fit &lt;- fitaci(aci, fitTPU=TRUE)
+```
+
+**注：未必一定出现 TPU**
+]
+
+.pull-right[
+![](R-6800-series-4_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+]
+
+
+---
+class: animated, fadeIn
+
+## Ci transition 
+
+Ci 浓度由 `\(A_c\)` 向 `\(A_j\)` （point1），以及 `\(A_j\)` 向 `\(A_p\)`（point2）转变时的浓度。
+
+```r
+findCiTransition(object)
+```
 
 ---
 class: inverse, center, middle, animated, fadeIn
 
-# 谢谢
-&lt;img src="./img/qrcode.jpg" width="377" /&gt;
+# .large.bold[拟合及结果的查看]
+---
+class: animated, fadeIn
+
+# 数据的拟合
+
+```r
+fitaci(data, varnames = list(ALEAF = "Photo", Tleaf = "Tleaf", Ci = "Ci",
+  PPFD = "PARi", Rd = "Rd"), Tcorrect = TRUE, Patm = 100,
+  citransition = NULL, quiet = FALSE, startValgrid = TRUE,
+  fitmethod = c("default", "bilinear", "onepoint"),
+  algorithm = "default", fitTPU = FALSE, alphag = 0, useRd = FALSE,
+  PPFD = NULL, Tleaf = NULL, alpha = 0.24, theta = 0.85,
+  gmeso = NULL, EaV = 82620.87, EdVC = 0, delsC = 645.1013,
+  EaJ = 39676.89, EdVJ = 2e+05, delsJ = 641.3615, GammaStar = NULL,
+  Km = NULL, id = NULL, ...)
+
+fitacis(data, group, fitmethod = c("default", "bilinear"),
+progressbar = TRUE, quiet = FALSE, id = NULL, ...)
+
+```
+本质上来讲，拟合的函数只有一个， `fitacis` 本质上是调用了 `fitaci`，使用一个 group 参数来区分多条曲线的数据。
+
+---
+class: animated, fadeIn
+
+# 结果的查看
+
+查看计算结果：
+
+&lt;br /&gt;
+```r
+?summary
+```
+&lt;br /&gt;
+
+图形查看，`acifit` S3 类，可以直接对拟合结果作图：
+
+&lt;br /&gt;
+```r
+plot(x, what = c("data", "model", "none"),
+  xlim = NULL, ylim = NULL, whichA = c("Ac", "Aj", "Amin", "Ap"),
+  add = FALSE, pch = 19, addzeroline = TRUE, addlegend = !add,
+  legendbty = "o", transitionpoint = TRUE, linecols = c("black",
+  "blue", "red"), lwd = c(1, 2), lty = 1, ...)
+```
+
+---
+class: animated, fadeIn
+
+background-image: url("https://s1.ax1x.com/2020/04/02/GJimlV.png")
+background-size: contain
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
