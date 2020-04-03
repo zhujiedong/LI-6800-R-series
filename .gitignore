@@ -4,3 +4,4 @@
 .Ruserdata
 *.PDF
 *.R
+.Rprofile
