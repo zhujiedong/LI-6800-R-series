@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>使用 R 分析 LI-6800 的数据之五</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="祝介东" />
+    <link rel="stylesheet" href="zh-CN.css" type="text/css" />
+    <link rel="stylesheet" href="extra-rutgers.css" type="text/css" />
+    <link rel="stylesheet" href="animate-min.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 使用 R 分析 LI-6800 的数据之五
+## 使用 onepoint 方法计算 Vcmax 和 Jmax
+### 祝介东
+### 北京力高泰科技有限公司 技术部
+### 2020-04-03 修改
+
+---
+
+background-image: url("https://s1.ax1x.com/2020/03/30/GmT0oT.png")
+
+class: inverse, left, middle, animated, fadeIn
+
+# 主要内容
+
+# 1.  one point 方法背景介绍
+# 2.  one point 的理论假设
+# 3.  one point 方法的拟合及演示
+---
+class: inverse center middle, animated, fadeIn
+
+# .large.bold[one point 方法的背景介绍]
+
+---
+class: animated, fadeIn
+
+# one point 方法的背景
+
+.pull-left[
+
+&lt;img src="./img/one-point.png" width="458" /&gt;
+]
+
+.pull-right[
+
+&lt;br /&gt;
+&lt;br /&gt;
+- 收集了 1394 个冠层上部叶片的 ACi 测量数据。
+
+- 涵盖 46 个样地的 564 个 C3 物种。
+
+- 除了一个样地使用了自制的开路系统外，其他均使用 LI-6400 测量完成。
+
+]
+
+---
+
+class: inverse center middle, animated, fadeIn
+
+# .large.bold[one point 的理论假设]
+
+---
+class: animated, fadeIn
+
+# `\(\hat V_{cmax}\)` 的计算
+
+.pull-left[
+
+计算前叶片需满足：
+
+- 叶片处于外界大气的 `\(CO_2\)` 浓度之下
+
+- 叶片处于饱和光强之下
+
+- 处于羧化速率限制阶段而不是 RuBP 再生阶段
+
+这样 `\(\hat V_{cmax}\)` 可以通过下面的公式来计算：
+
+`$$\hat V_{cmax} = (A_{sat}+R_{day})(\frac{C_i+ K_m}{C_i- \Gamma^*})$$` 
+
+而 Km 米氏常数则为：
+
+`$$K_m=K_c(1+\frac{O_i}{K_o})$$`
+
+]
+
+.pull-right[
+
+在 `\(R_{day}\)` 未知的情况下，作者按照 Collatz 等的方法，假设其为 `\(V_{cmax}\)` 的 1.5%，那么：
+
+`$$\hat V_{cmax} = \frac{A_{sat}}{\frac{C_i- \Gamma^*}{C_i+ K_m} - 0.015}$$`
+
+若 `\(R_{day}\)` 已知，那么可以直接带入计算，并且结果与实际 `\(V_{cmax}\)` 具有很高的一致性，**`fitaci` 需要使用 Rd**。
+
+]
+
+---
+class: animated, fadeIn
+
+
+# `\(\hat J_{max}\)` 的计算
+
+假设为 `\(J_{max}\)` 与 `\(V_{cmax}\)` 是有很强的相关性的， 实际上众多文献也证实了该点，one point 这篇文章中的比值均值为 1.9，范围在 1.68 ~ 2.14 之间。我们也可以提前测量或使用历史数据得到。
+
+-----
+
+**.large.bold[注意:]**
+
+该方法需要最所测量物种有非常深的了解，例如：
+
+- Ci transition 浓度，否则无法保证外界浓度二氧化碳下植物是否处于 Rubisco 限制阶段。
+
+- 准确的 `\(R_{day}\)` 测量有助于提升结果的可靠性。
+
+- 准确的 Vcmax 与 Jmax 的比例有助于 Jmax 的准确性，不过二者的比例一般都会在 2 左右。
+
+- 植物要确保处于饱和光强的照射之下，并且需要诱导。
+
+- 适合大批量的快速判定同一种的 Vcmax 或 Jmax
+
+---
+class: animated, fadeIn
+
+# 拟合方法
+
+.pull-left[
+拟合还是需要 `fitaci` 函数，正确的函数写法至少要包含下面的参数：
+
+```r
+fit &lt;-
+  fitaci(
+    aci,
+    varnames = list(
+      ALEAF = "A",
+      Tleaf = "Tleaf",
+      Ci = "Ci",
+      PPFD  = "Qin",
+      Rd = "Rd"
+    ),
+    fitmethod = "onepoint",
+    useRd = TRUE
+  )
+```
+第一个问题是表头必须使用 LI-6800 的格式。
+]
+
+.pull-right[
+
+&lt;br /&gt;
+`fitaci` 的计算要求输入 Rd，因此 `useRd = TRUE` 是必须的，拟合的方法自然是要选择 ‘onepoint’。
+
+&lt;img src="./img/rday.png" width="913" /&gt;
+
+]
+
+---
+class: animated, fadeIn
+
+# 结果的查看
+
+使用 onepoint 方法计算的结果不同于其他的两种拟合方法，该方法返回一个 data frame，所以我们如果需要,直接将数据保存到电脑即可，当然，也可以只保存 `\(J_{max}\)` 与 `\(V_{cmax}\)` 两列数据。
+
+例如使用 `write.csv` 将数据保存到本地：
+
+```r
+write.csv(fit, file.choose())
+```
+如果仅需要 `\(J_{max}\)` 与 `\(V_{cmax}\)` 两列数据，那么他们会在保存的 csv 格式的最后两列，我们可以手动删除其他列，或者先将两列数据单独存为 data.frame 后保存:
+
+```r
+df &lt;- data.frame(vcmax = fit$Vcmax, jmax = fit$Jmax)
+write.csv(df, file.choose())
+```
+---
+class: animated, fadeIn
+
+background-image: url("https://s1.ax1x.com/2020/04/02/GJimlV.png")
+background-size: contain
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "ir-black",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+(function(time) {
+  var d2 = function(number) {
+    return ('0' + number).slice(-2); // left-pad 0 to minutes/seconds
+  },
+
+  time_format = function(total) {
+    var secs = Math.abs(total) / 1000;
+    var h = Math.floor(secs / 3600);
+    var m = Math.floor(secs % 3600 / 60);
+    var s = Math.round(secs % 60);
+    var res = d2(m) + ':' + d2(s);
+    if (h > 0) res = h + ':' + res;
+    return res;  // [hh:]mm:ss
+  },
+
+  slide_number_div = function(i) {
+    return document.getElementsByClassName('remark-slide-number').item(i);
+  },
+
+  current_page_number = function(i) {
+    return slide_number_div(i).firstChild.textContent;  // text "i / N"
+  };
+
+  var timer = document.createElement('span'); timer.id = 'slide-time-left';
+  var time_left = time, k = slideshow.getCurrentSlideIndex(),
+      last_page_number = current_page_number(k);
+
+  setInterval(function() {
+    time_left = time_left - 1000;
+    timer.innerHTML = ' ' + time_format(time_left);
+    if (time_left < 0) timer.style.color = 'red';
+  }, 1000);
+
+  slide_number_div(k).appendChild(timer);
+
+  slideshow.on('showSlide', function(slide) {
+    var i = slide.getSlideIndex(), n = current_page_number(i);
+    // reset timer when a new slide is shown and the page number is changed
+    if (last_page_number !== n) {
+      time_left = time; last_page_number = n;
+      timer.innerHTML = ' ' + time_format(time); timer.style.color = null;
+    }
+    slide_number_div(i).appendChild(timer);
+  });
+})(300000);
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
