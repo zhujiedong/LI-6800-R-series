@@ -103,6 +103,7 @@ install.packages(c("packages1", "packages2", "..."))
 ```r
 remotes::install_github("repo name")
 remotes::install_bitbucket("repo name")
+remotes::install_git("url")
 ```
 
 ---
